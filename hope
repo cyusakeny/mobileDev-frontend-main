@@ -1,0 +1,63 @@
+   roles:{
+        type:Sequelize.ENUM("USER","ADMIN"),
+        allowNull:false
+       },
+      //// //////////
+ const Votings= db.define('votings',{
+    id:{
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4 ,
+        unique: true,
+        primaryKey:true,
+    },
+})    
+
+User.belongsToMany(Candidate, { through: Votings });
+Candidate.belongsToMany(User, { through: Votings });
+modeule.exports.voting = Votings;
+///////
+
+
+module.exports.getUserVote=async(userid,candidateId)=>{
+    return await models.voting.findOne({
+        where:{
+            userId:userid
+        }
+    }).then(vote=>{
+        return vote
+    }).catch(error=>{
+        console.log(error)
+    })
+}
+module.exports.AddVote=async(userid,candidate )=>{
+    const vote = this.getUserVote();
+    if(vote===null){
+    return models.voting.create({
+    userId:userid,
+    candidateId: candidate
+    }).then(user=>{
+    return user;
+    }).catch(err=>{
+    console.error(err)
+    })
+    else{
+    return null;
+    }
+    }  
+    }
+
+
+router.post('/voting',util.authenticateToken,async(req,res)=>{
+try{
+ const newresult = await service.AddVote(req.user.id,req.body.candidate)
+if(newresult===null){
+res.send("All ready voted ").status(201)
+}
+else{
+res.send(JSON.parse(JSON.stringify(newresult))).status(201)
+}
+}
+catch(err){
+res.send(err)
+}
+})
